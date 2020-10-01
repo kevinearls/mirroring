@@ -1,0 +1,46 @@
+# setup an elasticsearch with `make es`
+# setup a kafka platform with `make kafka`  See https://strimzi.io for more information
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: edge-streaming
+spec:
+  ingress:
+    enabled: true
+    security: none
+  strategy: streaming
+  collector:
+    options:
+      kafka:
+        producer:
+          topic: jaeger-spans
+          brokers: edge-cluster-kafka-bootstrap.edge-kafka.svc:9092
+          batch-size: 128000
+          batch-linger: 1s
+          batch-max-messages: 100
+  ingester:
+    options:
+      kafka:
+        consumer:
+          topic: jaeger-spans
+          brokers: edge-cluster-kafka-bootstrap.edge-kafka.svc:9092
+      ingester:
+        deadlockInterval: 0
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        # Note: This assumes elasticsearch is running in the "default" namespace.
+        server-urls: http://elasticsearch.default.svc:9200
+
+
+    #storage:
+    #  type: elasticsearch
+    #  elasticsearch:
+    #    nodeCount: 1
+    #    resources:
+    #      requests:
+    #        cpu: 200m
+    #        memory: 1Gi
+    ##      limits:
+    #        memory: 1Gi

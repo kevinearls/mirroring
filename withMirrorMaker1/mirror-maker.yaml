@@ -1,0 +1,17 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaMirrorMaker
+metadata:
+  name: my-mirror-maker
+spec:
+  version: 2.4.0
+  replicas: 1
+  consumer:
+    bootstrapServers: edge-cluster-kafka-bootstrap.edge-kafka.svc:9092
+    groupId: second-group
+  producer:
+    bootstrapServers: admin1-cluster-kafka-bootstrap-admin1-kafka.apps.ocp4-jqe4-3.maistra.upshift.redhat.com:443
+    tls:
+      trustedCertificates:
+        - secretName: admin1-secret
+          certificate: admin1_ca.crt
+  whitelist: "jaeger-spans"

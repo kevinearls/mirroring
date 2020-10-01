@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracegen
+  annotations:
+    "sidecar.jaegertracing.io/inject": "edge-streaming"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tracegen
+  template:
+    metadata:
+      labels:
+        app: tracegen
+    spec:
+      containers:
+      - name: tracegen
+        image: jaegertracing/jaeger-tracegen:1.19
+        args:
+        - -workers
+        - "3"
+        - -traces
+        - "10000"
+        - -service
+        - "edgetest1"

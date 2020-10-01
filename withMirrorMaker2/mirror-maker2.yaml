@@ -1,0 +1,30 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaMirrorMaker2
+metadata:
+  name: my-mirror-maker2
+spec:
+  version: 2.4.0
+  replicas: 1
+  connectCluster: "my-cluster-target"
+  clusters:
+  - alias: "my-cluster-source"
+    bootstrapServers: edge-cluster-kafka-bootstrap-edge-kafka.apps.ocp4-jqe4-4.maistra.upshift.redhat.com:443
+    config:
+      config.storage.replication.factor: 1
+      offset.storage.replication.factor: 1
+      status.storage.replication.factor: 1
+    tls:
+      trustedCertificates:
+        - certificate: edge_ca.crt
+          secretName: edge-secret
+  - alias: "my-cluster-target"
+    bootstrapServers: admin1-cluster-kafka-bootstrap.admin1-kafka.svc:9092
+    config:
+      config.storage.replication.factor: 1
+      offset.storage.replication.factor: 1
+      status.storage.replication.factor: 1
+  mirrors:
+  - sourceCluster: "my-cluster-source"
+    targetCluster: "my-cluster-target"
+    sourceConnector: {}
+

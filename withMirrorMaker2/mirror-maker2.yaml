@@ -6,6 +6,7 @@ spec:
   version: 2.4.0
   replicas: 1
   connectCluster: "my-cluster-target"
+  whitelist: "jaeger-spans"
   clusters:
   - alias: "my-cluster-source"
     bootstrapServers: edge-cluster-kafka-bootstrap-edge-kafka.apps.ocp4-jqe4-4.maistra.upshift.redhat.com:443
@@ -26,5 +27,7 @@ spec:
   mirrors:
   - sourceCluster: "my-cluster-source"
     targetCluster: "my-cluster-target"
-    sourceConnector: {}
+    sourceConnector:
+      config:
+        sync.topic.acls.enabled: "false"
 

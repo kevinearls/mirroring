@@ -1,0 +1,40 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaMirrorMaker2
+metadata:
+  name: my-mirror-maker2
+spec:
+  version: 2.4.0
+  replicas: 1
+  connectCluster: "my-cluster-target"
+  whitelist: "jaeger-spans"
+  clusters:
+  - alias: "my-cluster-source"
+    # To get this: oc get route edge-cluster-kafka-bootstrap --namespace edge -o=jsonpath='{.status.ingress[0].host}'.  For example
+    #bootstrapServers: edge-cluster-kafka-bootstrap-edge-kafka.apps.kearls-458k.devcluster.openshift.com:443
+    bootstrapServers: EDGE_CLUSTER_BOOTSTRAP_ROUTE:443
+    config:
+      config.storage.replication.factor: 1
+      offset.storage.replication.factor: 1
+      status.storage.replication.factor: 1
+    tls:
+      trustedCertificates:
+        - certificate: edge_ca.crt
+          secretName: edge-secret
+  - alias: "my-cluster-target"
+    bootstrapServers: admin1-cluster-kafka-bootstrap.admin1-kafka.svc:9092
+    config:
+      config.storage.replication.factor: 1
+      offset.storage.replication.factor: 1
+      status.storage.replication.factor: 1
+  mirrors:
+  - sourceCluster: "my-cluster-source"
+    targetCluster: "my-cluster-target"
+    sourceConnector:
+      config:
+        sync.topic.acls.enabled: "false"
+        # Set replication policy will be in Strimzi 0.20 and in November AMQ Streams 1.6
+        # This will prevent Kafka from adding the cluster prefix so Jaeger will get all traces on one topic
+        # For more details see: https://github.com/strimzi/strimzi-kafka-operator/blob/eb1de79f53903d7b0d3a14517cc5a54ede4a3c0b/examples/mirror-maker/kafka-mirror-maker-2-custom-replication-policy.yaml#L27
+        #replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"
+
+
